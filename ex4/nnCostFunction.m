@@ -62,45 +62,42 @@ Theta2_grad = zeros(size(Theta2));
 %               and Theta2_grad from Part 2.
 %
 
-unreg = 0;
-
-Theta1_nobias = Theta1(:, 2:end);
-Theta2_nobias = Theta2(:,2:end);
-
 D1_unreg = zeros(size(Theta1));
 D2_unreg = zeros(size(Theta2));
 
-for i = 1:m
-  a1 = [1, X(i,:)]';
-  z2 = Theta1 * a1;
-  a2 = [1; sigmoid(z2)];
-  z3 = Theta2 * a2;
-  h = sigmoid(z3);
+% FEED FORWARD
 
-  d3 = zeros(num_labels, 1);
+a1 = [ones(size(X, 1), 1) X]; % Rows: one for each example; Cols: input values for each feature, plus bias unit prefix
+z2 = a1 * Theta1'; % Rows: one for each example; Cols: pre-sigmoid activation value for each unit
+a2 = [ones(size(z2, 1), 1) sigmoid(z2)]; % Rows: one for each example; Cols: activation value for each unit, plus bias unit prefix
+z3 = a2 * Theta2'; % Rows: one for each example; Cols: pre-sigmoid output value for each unit
+h = sigmoid(z3); % Rows: one for each example; Cols: output value for each unit
 
-  for k = 1:num_labels
-    if y(i) == k
-      unreg -= log(h(k));
-    else
-      unreg -= log(1 - h(k));
-    end
+% COST CALCULATION
 
-    d3(k, 1) = h(k) - (y(i) == k);
-  end
-
-  d2 = (Theta2_nobias' * d3) .* sigmoidGradient(z2);
-
-  D1_unreg += d2 * a1';
-  D2_unreg += d3 * a2';
+yk = zeros(m, num_labels); % Rows: one for each example; Cols: 1 if the example classifies to the label equal to the column number, 0 otherwise
+for k = 1:num_labels
+  yk(:, k) = y == k;
 end
 
-reg = sum(sum(Theta1_nobias .^ 2)) + sum(sum(Theta2_nobias .^ 2));
+Theta1_nobias = Theta1(:, 2:end);
+Theta2_nobias = Theta2(:, 2:end);
+
+J = sum(sum(-yk .* log(h) - (1 - yk) .* log(1 - h)));
+J_reg = sum(sum(Theta1_nobias .^ 2)) + sum(sum(Theta2_nobias .^ 2));
+J += (lambda / 2) * J_reg;
+J /= m;
+
+% BACKPROPAGATION
+
+d3 = h - yk; % Rows: one for each example; Cols: raw error for each output hypothesis
+d2 = d3 * Theta2_nobias .* sigmoidGradient(z2);
+
+D1_unreg = d2' * a1;
+D2_unreg = d3' * a2;
 
 D1_reg = [zeros(size(Theta1, 1), 1), Theta1_nobias];
 D2_reg = [zeros(size(Theta2, 1), 1), Theta2_nobias];
-
-J = (unreg + lambda*reg/2) / m;
 
 Theta1_grad = (D1_unreg + lambda*D1_reg) / m;
 Theta2_grad = (D2_unreg + lambda*D2_reg) / m;
