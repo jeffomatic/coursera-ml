@@ -28,8 +28,8 @@ sigma = zeros(1, size(X, 2));
 
 mu = mean(X, 1);
 sigma = std(X, 1);
-mus = ones(size(X)(1), 1) * mu;
-sigmas = ones(size(X), 1) * sigma;
+mus = ones(size(X, 1), 1) * mu;
+sigmas = ones(size(X, 1), 1) * sigma;
 X_norm = (X - mus) ./ sigmas;
 
 % ============================================================

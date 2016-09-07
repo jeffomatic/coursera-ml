@@ -18,10 +18,7 @@ for iter = 1:num_iters
     %
 
     devs = X * theta - y;
-    for i = 1:size(X, 2)
-        S(i, 1) = sum(devs .* X(:,i));
-    end
-    theta = theta - (alpha / m) * S;
+    theta -= (alpha / m) * (X' * devs);
 
     % ============================================================
 
