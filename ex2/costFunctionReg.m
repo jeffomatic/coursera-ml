@@ -18,14 +18,16 @@ grad = zeros(size(theta));
 %               derivatives of the cost w.r.t. each parameter in theta
 
 h = sigmoid(X * theta);
-J = sum(-y .* log(h) - (1 - y) .* log(1 - h)) / m;
-J += (lambda / (2 * m)) * sum(theta(2:size(theta, 1)) .^ 2);
 
-grad(1, 1) = sum((h - y) .* X(:, 1)) / m;
+J = sum(-y .* log(h) - (1 - y) .* log(1 - h));
+J += (lambda / 2) * sum(theta(2:end, 1) .^ 2);
+J /= m;
 
-for j = 2:size(theta, 1)
-  grad(j, 1) = (sum((h - y) .* X(:, j)) / m) + (lambda / m) * theta(j);
-end
+grad = X' * (h -y);
+grad_reg = lambda * theta;
+grad_reg(1, 1) = 0; % don't regularize bias unit
+grad += grad_reg;
+grad /= m;
 
 % =============================================================
 
